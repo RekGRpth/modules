@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 extern size_t hesc_escape_html(uint8_t **dest, const uint8_t *src, size_t size);
+extern size_t hesc_escape_html2(const uint8_t *dest, const uint8_t *src, size_t size, size_t dest_size);
 
 #ifdef __cplusplus
 }

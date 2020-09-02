@@ -33,6 +33,7 @@ class EscapedString
 };
 
 void Escape(const FunctionCallbackInfo<Value> &args);
+void Escape2(const FunctionCallbackInfo<Value> &args);
 void Init(Isolate* isolate, Local<ObjectTemplate> target);
 
 }

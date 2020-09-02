@@ -140,12 +140,10 @@ hesc_escape_html(uint8_t **dest, const uint8_t *buf, size_t size)
     i++;
   }
 # endif
-
   while (i < size) {
     // Loop here to skip non-escaped characters fast.
     while (i < size && (esc_i = HTML_ESCAPE_TABLE[buf[i]]) == 0)
       i++;
-
     if (esc_i) {
       rbuf = ensure_allocated(rbuf, sizeof(uint8_t) * (size + esize + ESC_LEN(esc_i) + 1), &asize);
       rbuf_i = append_pending_buf(rbuf, rbuf_i, buf, i, esize);
@@ -163,6 +161,46 @@ hesc_escape_html(uint8_t **dest, const uint8_t *buf, size_t size)
     rbuf[size + esize] = '\0';
 
     *dest = rbuf;
+    return size + esize;
+  }
+}
+
+size_t
+hesc_escape_html2(const uint8_t *dest, const uint8_t *buf, size_t size, size_t dest_size)
+{
+  size_t asize = 0, esc_i, esize = 0, i = 0, rbuf_i = 0;
+  const uint8_t *esc;
+  uint8_t *rbuf = dest;
+
+# ifdef __SSE4_2__
+  __m128i escapes5 = _mm_loadu_si128((const __m128i *)"\"&'<>");
+  while (likely(size - i >= 16)) {
+    int found = 0;
+    if (unlikely((esc_i = HTML_ESCAPE_TABLE[buf[i]]) == 0)) {
+      i = find_char_fast(buf, i, size, escapes5, 5, &found);
+      if (!found) break;
+      esc_i = HTML_ESCAPE_TABLE[buf[i]];
+    }
+    rbuf_i = append_pending_buf(rbuf, rbuf_i, buf, i, esize);
+    rbuf_i = append_escaped_buf(rbuf, rbuf_i, esc_i, &esize);
+    i++;
+  }
+# endif
+  while (i < size) {
+    // Loop here to skip non-escaped characters fast.
+    while (i < size && (esc_i = HTML_ESCAPE_TABLE[buf[i]]) == 0)
+      i++;
+    if (esc_i) {
+      rbuf_i = append_pending_buf(rbuf, rbuf_i, buf, i, esize);
+      rbuf_i = append_escaped_buf(rbuf, rbuf_i, esc_i, &esize);
+    }
+    i++;
+  }
+  if (rbuf_i == 0) {
+    return size;
+  } else {
+    append_pending_buf(rbuf, rbuf_i, buf, size, esize);
+    rbuf[size + esize] = '\0';
     return size + esize;
   }
 }

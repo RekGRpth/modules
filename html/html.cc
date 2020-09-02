@@ -70,8 +70,47 @@ void just::html::Escape(const FunctionCallbackInfo<Value> &args) {
     NewStringType::kNormal, size).ToLocalChecked());
 }
 
+void just::html::Escape2(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  HandleScope handleScope(isolate);
+  Local<Context> context = isolate->GetCurrentContext();
+  Local<ArrayBuffer> ab = args[0].As<ArrayBuffer>();
+  std::shared_ptr<BackingStore> backing = ab->GetBackingStore();
+  const uint8_t* data = static_cast<uint8_t *>(backing->Data());
+  Local<ArrayBuffer> destab = args[1].As<ArrayBuffer>();
+  std::shared_ptr<BackingStore> destbacking = destab->GetBackingStore();
+  const uint8_t* destdata = static_cast<uint8_t *>(destbacking->Data());
+  size_t len = backing->ByteLength();
+  int argc = args.Length();
+  if (argc > 2) {
+    len = args[2]->Int32Value(context).ToChecked();
+  }
+  int off = 0;
+  if (argc > 3) {
+    off = args[3]->Int32Value(context).ToChecked();
+  }
+  int destoff = 0;
+  if (argc > 4) {
+    destoff = args[4]->Int32Value(context).ToChecked();
+  }
+  size_t destlen = destbacking->ByteLength() - destoff;
+  const uint8_t* source = data + off;
+  const uint8_t* dest = destdata + destoff + 4;
+  size_t size = hesc_escape_html2(dest, source, len, destlen);
+  uint32_t* outsize = (uint32_t*)(dest - 4);
+  *outsize = size;
+  if (size > len) {
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, (const char*)dest, 
+      NewStringType::kNormal, size).ToLocalChecked());
+  } else {
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, (const char*)source, 
+      NewStringType::kNormal, size).ToLocalChecked());
+  }
+}
+
 void just::html::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> html = ObjectTemplate::New(isolate);
   SET_METHOD(isolate, html, "escape", Escape);
+  SET_METHOD(isolate, html, "escape2", Escape2);
   SET_MODULE(isolate, target, "html", html);
 }
