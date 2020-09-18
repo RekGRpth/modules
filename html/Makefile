@@ -11,12 +11,12 @@ hescape.o: ## compile hescape lib
 
 html.so: ## build shared library
 	make hescape.o
-	$(CC) -c -fPIC -std=c++11 -DV8_COMPRESS_POINTERS -I. -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -flto -Wno-unused-parameter html.cc
+	$(CC) -c -fPIC -std=c++17 -DV8_COMPRESS_POINTERS -I. -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -flto -Wno-unused-parameter html.cc
 	$(CC) -s -shared -flto -pthread -m64 -Wl,--start-group html.o hescape.o -Wl,--end-group -Wl,-soname=html.so -o html.so
 
 http.a: ## build static library
 	make hescape.o
-	$(CC) -c -std=c++11 -DV8_COMPRESS_POINTERS -I. -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -Wno-unused-parameter html.cc
+	$(CC) -c -std=c++17 -DV8_COMPRESS_POINTERS -I. -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -Wno-unused-parameter html.cc
 	ar -crs html.a hescape.o html.o
 
 clean: ## tidy up

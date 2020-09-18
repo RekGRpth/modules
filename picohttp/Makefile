@@ -17,18 +17,19 @@ picohttpparser.o: deps ## compile picohttpparser lib
 picohttpparser.debug: ## compile picohttpparser lib
 	$(C) -fPIC -c -DV8_COMPRESS_POINTERS -Ideps/picohttpparser -g -O3 -Wall -Wextra -march=native -mtune=native -msse4 deps/picohttpparser/picohttpparser.c
 
-http.so: picohttpparser.o ## build shared library
-	$(CC) -c -fPIC -std=c++11 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -flto -Wno-unused-parameter http.cc
+http.so: ## build shared library
+	make picohttpparser.o
+	$(CC) -c -fPIC -std=c++17 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -flto -Wno-unused-parameter http.cc
 	$(CC) -s -shared -flto -pthread -m64 -Wl,--start-group http.o picohttpparser.o -Wl,--end-group -Wl,-soname=http.so -o http.so
 
 debug: ## build shared library
 	make picohttpparser.debug
-	$(CC) -c -fPIC -std=c++11 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -g -O3 -march=native -mtune=native -Wall -Wextra -flto -Wno-unused-parameter http.cc
+	$(CC) -c -fPIC -std=c++17 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -g -O3 -march=native -mtune=native -Wall -Wextra -flto -Wno-unused-parameter http.cc
 	$(CC) -shared -flto -pthread -m64 -Wl,--start-group http.o picohttpparser.o -Wl,--end-group -Wl,-soname=http.so -o http.so
 
 http.a: ## build static library
 	make picohttpparser.o
-	$(CC) -c -std=c++11 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -Wno-unused-parameter http.cc
+	$(CC) -c -std=c++17 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -Wno-unused-parameter http.cc
 	ar -crs http.a picohttpparser.o http.o
 
 clean: ## tidy up
