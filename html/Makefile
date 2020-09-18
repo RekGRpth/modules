@@ -29,8 +29,8 @@ all: ## make all
 	make html.so
 	make html.a
 
-install: ## copy shared libarary to /usr/local/lib/just
-	sudo mkdir -p /usr/local/lib/just && sudo cp -f html.so /usr/local/lib/just/
+install: html.so ## copy shared libarary to /usr/local/lib
+	mkdir -p /usr/local/lib && cp -f html.so /usr/local/lib/
 
 cleanall: ## tidy up dependencies
 	make clean

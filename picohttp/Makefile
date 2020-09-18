@@ -11,14 +11,13 @@ deps: ## dependencies
 	curl -L -o deps/picohttpparser/picohttpparser.h https://raw.githubusercontent.com/h2o/picohttpparser/master/picohttpparser.h
 	curl -L -o deps/picohttpparser/picohttpparser.c https://raw.githubusercontent.com/h2o/picohttpparser/master/picohttpparser.c
 
-picohttpparser.o: ## compile picohttpparser lib
+picohttpparser.o: deps ## compile picohttpparser lib
 	$(C) -fPIC -c -DV8_COMPRESS_POINTERS -Ideps/picohttpparser -g -O3 -Wall -Wextra -march=native -mtune=native -msse4 deps/picohttpparser/picohttpparser.c
 
 picohttpparser.debug: ## compile picohttpparser lib
 	$(C) -fPIC -c -DV8_COMPRESS_POINTERS -Ideps/picohttpparser -g -O3 -Wall -Wextra -march=native -mtune=native -msse4 deps/picohttpparser/picohttpparser.c
 
-http.so: ## build shared library
-	make picohttpparser.o
+http.so: picohttpparser.o ## build shared library
 	$(CC) -c -fPIC -std=c++11 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -flto -Wno-unused-parameter http.cc
 	$(CC) -s -shared -flto -pthread -m64 -Wl,--start-group http.o picohttpparser.o -Wl,--end-group -Wl,-soname=http.so -o http.so
 
@@ -29,7 +28,7 @@ debug: ## build shared library
 
 http.a: ## build static library
 	make picohttpparser.o
-	$(CC) -c -std=c++11 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I../../just -I../../just/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -Wno-unused-parameter http.cc
+	$(CC) -c -std=c++11 -DV8_COMPRESS_POINTERS -I. -Ideps/picohttpparser -I$(JUST_HOME) -I$(JUST_HOME)/deps/v8/include -O3 -march=native -mtune=native -Wall -Wextra -Wno-unused-parameter http.cc
 	ar -crs http.a picohttpparser.o http.o
 
 clean: ## tidy up
@@ -43,8 +42,8 @@ all: ## make all
 	make http.so
 	make http.a
 
-install: ## copy shared libarary to /usr/local/lib/just
-	sudo mkdir -p /usr/local/lib/just && sudo cp -f http.so /usr/local/lib/just/
+install: http.so ## copy shared libarary to /usr/local/lib
+	mkdir -p /usr/local/lib && cp -f http.so /usr/local/lib/
 
 cleanall: ## tidy up dependencies
 	make clean
